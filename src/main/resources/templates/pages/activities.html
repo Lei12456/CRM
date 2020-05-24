@@ -1,0 +1,249 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<div id="activities">
+	<div>
+		<form class="form-inline">
+			<div class="form-group" style="padding-left: 10px;">
+				<label style="font-size: 18px;">交往记录:</label>
+			</div>
+			<input class="btn btn-default" type="button" value="add" id="add">
+
+		</form>
+	</div>
+
+	<div>
+		<table class="table table-hover">
+			<thead>
+				<tr style="background: #E8E8E8;">
+					<th>地点</th>
+					<th>概要</th>
+					<th>备注</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+
+			<tbody th:each="activity:${session.activities}">
+				<tr>
+					<td th:text="${activity.place}"></td>
+					<td th:text="${activity.title}"></td>
+					<td th:text="${activity.memo}"></td>
+					<td>
+						<i th:attr="id=${activity.id}" class="layui-icon layui-icon-edit editUser" title="编辑"></i>
+						<i th:attr="id=${activity.id}" class="layui-icon layui-icon-delete deleteUser" title="删除"></i>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="fenye">
+		<nav aria-label="Page navigation">
+			<ul class="pagination">
+				<li>
+					<a href="#" aria-label="Previous" th:if="${session.activities.hasPrevious()==false}">
+				       <span aria-hidden="true">上一页</span>
+					</a>
+					<a href="#" aria-label="Previous" th:if="${session.activities.hasPrevious()==true}"
+						th:onclick="|selectPage(${session.activities.number-1})|">
+				    	<span>上一页</span>
+					</a>
+				</li>
+				<li th:each="num:${#numbers.sequence(1,session.activities.totalPages)}"
+					th:attr="class=${session.activities.number==(num-1)}?'active':''">
+					<a href="#" th:onclick="|selectPage(${num-1})|" th:text="${num}">1</a>
+				</li>
+				<li>
+					<a href="#" aria-label="Next" th:if="${session.activities.hasNext()==false}"> 
+						<span aria-hidden="true">下一页</span>
+					</a>
+					<a href="#" aria-label="Next" th:if="${session.activities.hasNext()==true}"
+						th:onclick="|selectPage(${session.activities.number+1})|"> 
+						<span>下一页</span>
+					</a>
+				</li>
+				<li>
+					<span>当前：
+						<span th:text="${session.customers.number+1}">1
+						</span>页/ 共
+						<span th:text="${session.customers.totalPages}">
+						</span>页
+					</span>
+				</li>
+			</ul>
+		</nav>
+
+	</div>
+	<div class="back">
+		<button class="btn" style="background: #ccc">返回</button>
+	</div>
+	<!-- 删除模态框 -->
+	<div class="modal" id="deleteModal">
+		<div class="modal-dialog" style="width: 350px;">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title">是否确定删除</h4>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default " data-dismiss="modal">取消</button>
+					<button type="button" class="btn btn-primary">确定</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 新增模态框 -->
+	<div class="modal" id="toAdd">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form>
+					<div class="modal-body">
+						<div class="form-group">
+							<label>地点:</label> <input type="text" name="mplace"
+								class="form-control">
+								<input type="hidden" name="cusId"
+							    th:value="${session.cusId}">
+						</div>
+						<div class="form-group">
+							<label>概要:</label> <input type="text" name="mtitle"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>备注:</label> <input type="textarea" name="mmemo"
+								style="height: 60px" class="form-control">
+						</div>
+					</div>
+				</form>
+				<div class="modal-footer">
+					<button class="btn" style="background: #ccc">取消</button>
+					<button class="btn" style="background: #ccc">保存</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+<style>
+.pagination>.active>a, .pagination>.active>a:focus, .pagination>.active>a:hover,
+	.pagination>.active>span, .pagination>.active>span:focus, .pagination>.active>span:hover
+	{
+	background-color: #ccc;
+	border-color: #ccc;
+}
+
+.pagination>li>a, .pagination>li>span {
+	color: black;
+}
+
+#activities {
+	width: 1140px;
+	overflow: hidden;
+}
+
+.fenye {
+	margin-left: 400px;
+}
+
+.back {
+	float: right;
+}
+
+.form-inline {
+	margin-top: 15px;
+	margin-left: 10px;
+	margin-bottom: 20px;
+}
+
+input[type=submit] {
+	margin-left: 50px;
+}
+
+#add {
+	margin-left: 1050px;
+}
+
+.table th, td {
+	text-align: center;
+}
+
+#deleteModal {
+	margin-top: 100px;
+}
+
+#toAdd {
+	margin-top: 50px;
+}
+</style>
+<script type="text/javascript">
+	function selectPage(num){
+		$("#activities").load("activity/updatePage",{pageIndex:num})
+	}
+	$(function() {
+		var actiId;
+		var cusId;
+		// 显示删除模态框
+		$('.deleteUser').click(function() {
+			actiId = $(this).attr("id");
+			cusId = $("input[name=cusId]").val();
+			$('#deleteModal').show();
+		})
+		// 关闭删除模态框
+		$('.close').click(function() {
+			$('#deleteModal').hide();
+		})
+		// 关闭删除模态框
+		$('.btn-default').click(function() {
+			$('#deleteModal').hide();
+		})
+		// 确定删除
+		$('.btn-primary').click(function() {
+			$('#deleteModal').hide();
+			$.post("activity/deleteById",{id:actiId},function(data){
+				alert(data);
+				$("#activities").load("activity/toActivity",{cusId:cusId});
+			})
+		})
+		// 点击新增显示模态框
+		$('#add').click(function() {
+			$('#toAdd').show();
+		})
+		// 新增模态框关闭
+		$('button:contains(取消)').on('click', function() {
+			$('button[type=reset]').trigger('click');
+			$('#toAdd').hide();
+		})
+		// 新增模态框保存
+		$('button:contains(保存)').on('click', function() {
+			$('#toAdd').hide();
+			cusId = $("input[name=cusId]").val();
+			var activity = {
+					id:actiId,
+					customer:cusId,
+					place:$("input[name=mplace]").val(),
+					title:$("input[name=mtitle]").val(),
+					memo:$("input[name=mmemo]").val()
+			}
+			$.post("activity/saveActivity",activity,function(data){
+					alert(data);
+					$("#activities").load("activity/toActivity",{cusId:cusId});
+			})
+			actiId = null;
+			
+		}) 
+		// 点击编辑显示模态框
+		$('.editUser').click(function() {
+			$('#toAdd').show();
+			actiId = $(this).attr("id");
+			$.post("activity/findById",{id:actiId},function(data){
+				place:$("input[name=mplace]").val(data.place)
+				title:$("input[name=mtitle]").val(data.title)
+				memo:$("input[name=mmemo]").val(data.memo)
+			});
+		})
+		// 返回
+		$('button:contains(返回)').on('click', function() {
+			$('.layui-body').load('customer/toCustomer');
+		})
+	})
+</script>
+</html>

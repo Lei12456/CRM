@@ -1,0 +1,312 @@
+<!-- 服务处理 -->
+<html xmlns:th="http://www.thymeleaf.org">
+<div id="service">
+	<div>
+		<form class="form-inline">
+			<div class="form-group">
+				<input type="text" class="form-control" id="selectCusName"
+					placeholder="请输入客户名称">
+			</div>
+
+			<div class="form-group">
+				<select name="city" id="selectType" class="form-control">
+					<option value="">请选择服务类型</option>
+					<option value="0">咨询</option>
+					<option value="1">投诉</option>
+					<option value="2">建议</option>
+				</select>
+			</div>
+			<input class="btn btn-default search" type="button" value="查询">
+			<input class="btn btn-default" type="reset" value="重置"> <input
+				class="btn btn-default" type="button" value="新增" id="add">
+
+		</form>
+	</div>
+
+	<div>
+		<table class="table table-hover">
+			<thead>
+				<tr style="background: #E8E8E8;">
+					<th>序号</th>
+					<th>客户名称</th>
+					<th>服务类型</th>
+					<th>服务状态</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+
+			<tbody th:each="service:${session.services}">
+				<tr>
+					<td th:text="${service.id}"></td>
+					<td th:text="${service.customer.name}"></td>
+					<td th:text="${service.type}"></td>
+					<td th:text="${service.status}"></td>
+					<td th:if="${service.status=='未处理'}">
+						<i th:id="${service.id}" class="layui-icon layui-icon-edit editUser" title="编辑"></i>
+					</td>
+					<td th:if="${service.status=='处理中'}">
+						<i th:id="${service.id}" class="layui-icon layui-icon-edit editUser" title="编辑"></i>
+						<i th:id="${service.id}" class="layui-icon layui-icon-ok update" title="更新"></i>
+					</td>
+					<td th:if="${service.status=='已处理'}">
+						<i th:id="${service.id}" class="layui-icon layui-icon-ok select" title="更新"></i>
+					</td>	
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="fenye">
+		<nav aria-label="Page navigation">
+			<ul class="pagination">
+				<li>
+					<a href="#" aria-label="Previous" th:if="${session.services.hasPrevious()==false}">
+						<span aria-hidden="true">上一页</span>
+					</a>
+					<a href="#" aria-label="Previous" th:if="${session.services.hasPrevious()==true}"
+						th:onclick="|selectPage(${session.services.number-1})|">
+						<span>上一页</span>
+					</a>
+				</li>
+				<li class="active" th:each="num:${#numbers.sequence(1,session.services.totalPages)}"
+					th:attr="class=${session.services.number==(num-1) ? 'active' : ''}">
+					<a href="#" th:text="${num}" th:onclick="|selectPage(${num-1})|">1</a>
+				</li>
+				<li>
+					<a href="#" aria-label="Next" th:if="${session.services.hasNext()==false}" > 
+						<span aria-hidden="true">下一页</span>
+					</a>
+					<a href="#" aria-label="Next" th:if="${session.services.hasNext()==true}" 
+						th:onclick="|selectPage(${session.services.number+1})|"> 
+						<span>下一页</span>
+					</a>
+				</li>
+				
+				<li>
+					<span>当前：
+						<span th:text="${session.services.number+1}">1
+						</span>页/ 共
+						<span th:text="${session.services.totalPages}">
+						</span>页
+					</span>
+				</li>
+			</ul>
+		</nav>
+	</div>
+	<!-- 新增模态框 -->
+	<div class="modal" id="toAdd">
+		<div class="modal-dialog" style="height: 400px; overflow: auto;">
+			<div class="modal-content">
+				<form id="addForm">
+					<div class="modal-body">
+						<div class="form-group">
+							<label>服务类型:</label> <select name="city" id="selType"
+								class="form-control">
+								<option value="">请选择服务类型</option>
+								<option value="1">咨询</option>
+								<option value="2">投诉</option>
+								<option value="3">建议</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>服务概要:</label> <input type="text" name="mRequest"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>客户名称:</label> <select name="city" id="selCusname"
+								class="form-control">
+								<option value="">请选择客户名称</option>
+								<th:block th:each="customer:${session.customers_service}">
+									<option  th:value="${customer.id}"th:text="${customer.name}"></option>
+								</th:block>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>状态:</label> <select name="city" id="selStatus" class="form-control">
+								<option value="">请选择状态</option>
+								<option value="1">未处理</option>
+								<option value="2">处理中</option>
+								<option value="3">已处理</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>创建人:</label>
+							 <input type="text" name="mCreator" 
+							 th:value="${session.user.name}" th:id="${session.user.id}"
+							 class="form-control" readonly="readonly">
+						</div>
+						<div class="form-group">
+							<label>处理人:</label>
+							<input type="textarea" name="mhandler"
+								style="height: 60px" class="form-control">
+						</div>
+						<div class="form-group">
+							<label>服务处理过程:</label> <input type="textarea" name="mProcess"
+								style="height: 60px" class="form-control">
+						</div>
+						<div class="form-group">
+							<label>服务结果:</label> <input type="textarea" name="mResult"
+								style="height: 60px" class="form-control">
+						</div>
+						<div class="form-group">
+							<label>服务满意度:</label> <input type="textarea" name="mSatisfy"
+								style="height: 60px" class="form-control">
+						</div>
+					</div>
+				</form>
+				<div class="modal-footer">
+					<button class="btn" style="background: #ccc">取消</button>
+					<button class="btn" style="background: #ccc">保存</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+<style>
+#service {
+	width: 1140px;
+	overflow: hidden;
+}
+
+.pagination>.active>a, .pagination>.active>a:focus, .pagination>.active>a:hover,
+	.pagination>.active>span, .pagination>.active>span:focus, .pagination>.active>span:hover
+	{
+	background-color: #ccc;
+	border-color: #ccc;
+}
+
+.pagination>li>a, .pagination>li>span {
+	color: black;
+}
+
+.fenye {
+	margin-left: 400px;
+}
+
+.form-inline {
+	margin-top: 15px;
+	margin-left: 10px;
+	margin-bottom: 20px;
+}
+
+.search {
+	margin-left: 50px;
+}
+
+#add {
+	margin-left: 560px;
+}
+
+.table th, td {
+	text-align: center;
+}
+
+#deleteModal {
+	margin-top: 100px;
+}
+
+#toAdd {
+	margin-top: 50px;
+}
+</style>
+<script type="text/javascript">
+	/*进行分页  */
+	function selectPage(num){
+		$("#service").load("updateServicePage",{pageIndex:num});
+	}
+
+	$(function(){
+		var serId;
+		$('.layui-icon-face-smile').click(function(){
+			 $('.layui-body').load('./pages/serviceDetails2.html');  
+		})
+		// 点击新增显示模态框
+		$('#add').click(function(){
+			$('#toAdd').show();
+			serId=null;
+		})
+		// 新增模态框关闭
+		$('button:contains(取消)').on('click',function(){
+			$('button[type=reset]').trigger('click');
+				$('#toAdd').hide();
+				document.getElementById("addForm").reset();
+		})
+		// 新增模态框保存
+		$('button:contains(保存)').on('click',function(){
+				$('#toAdd').hide();
+				let service  = {
+					id:serId,
+					type:$("#selType option:selected").text(),
+					customer:$("#selCusname option:selected").val(),
+					status:$("#selStatus option:selected").text(),
+					request:$("input[name=mRequest]").val(),
+					creator:$("input[name=mCreator]").attr("id"),
+					handler:$("input[name=mhandler]").val(),
+					process:$("input[name=mProcess]").val(),
+					result:$("input[name=mResult]").val(),
+					satisfy:$("input[name=mSatisfy]").val()
+				};
+				$.post("saveService",service,function(data){
+					alert(data);
+					$("#service").load("toService");
+				})
+		})	
+		// 点击编辑显示模态框
+		$('.editUser').click(function(){
+			$('#toAdd').show();
+			serId = $(this).attr("id");
+			alert(serId);
+			$.post("findServiceById",{id:serId},function(data){
+				if(data.type=='咨询'){
+					$("#selType").val(1);
+				}else if(data.type=='投诉'){
+					$("#selType").val(2);
+				}else if(data.type=='建议'){
+					$("#selType").val(3);
+				}
+				$("#selCusname").val(data.customer.id);
+				if(data.status=='未处理'){
+					$("#selStatus").val(1);
+				}else if(data.status=='处理中'){
+					$("#selStatus").val(2);
+				}else if(data.status=='已处理'){
+					$("#selStatus").val(3);
+				}
+				$("input[name=mRequest]").val(data.request);
+				$("input[name=mhandler]").val(data.handler);
+				$("input[name=mProcess]").val(data.process);
+				$("input[name=mResult]").val(data.result)
+				$("input[name=mSatisfy]").val(data.satisfy);
+				
+			})
+			
+		})
+		/*进行更新服务状态  */
+		$('.update').click(function(){
+			var id = $(this).attr("id");
+			alert(id)
+			$.post("updateStatus",{id:id},function(data){
+				alert(data);
+				$("#service").load("toService");
+			})
+		})
+		//查看服务详细信息
+		$('.select').click(function(){
+			var id = $(this).attr("id");
+			alert(id)
+			$("#service").load("toServiceDetails",{id:id})
+	
+		})
+		// 查询
+		$('.search').click(function(){
+			var selectType = $("#selectType option:selected").text();
+			var selectCusName = $("#selectCusName").val();
+			if(selectType == '请选择服务类型'){
+				selectType = null;
+			}
+			$("#service").load("toService",{cusName:selectCusName,type:selectType});
+		})
+		
+	})
+</script>
+</html>

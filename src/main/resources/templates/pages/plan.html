@@ -1,0 +1,160 @@
+<!-- 客户开发计划 -->
+<html xmlns:th="http://www.thymeleaf.org">
+<div id="plan">
+	<div>
+		<form class="form-inline">
+			<div class="form-group">
+				<select  id="address" class="form-control">
+					<option value="">请选择所属地区</option>
+					<option value="0">华中</option>
+					<option value="1">华北</option>
+					<option value="2">华南</option>
+					<option value="3">华东</option>
+				</select>
+			</div>
+			<input class="btn btn-default search" type="button" value="查询">
+			<input class="btn btn-default" type="reset" value="重置">
+		</form>
+	</div>
+	<div>
+		<table class="table table-hover">
+			<thead>
+				<tr style="background: #E8E8E8;">
+					<th>序号</th>
+					<th>客户名称</th>
+					<th>概要</th>
+					<th>联系人</th>
+					<th>联系电话</th>
+					<th>状态</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+
+			<tbody th:each="chance:${session.plan_Chances}">
+				<tr>
+					<td th:text="${chance.id}"></td>
+					<td th:text="${chance.customer}"></td>
+					<td th:text="${chance.title}"></td>
+					<td th:text="${chance.linkman}"></td>
+					<td th:text="${chance.phone}"></td>
+					<td th:text="${chance.status}"></td>
+					<td th:if="${chance.status=='待处理'}">
+						<i th:id="${chance.id}" name="待处理" th:value="${session.msg}" class="layui-icon layui-icon-loading"></i>
+					</td>
+					<td th:if="${chance.status=='处理中'}">
+		      	   		<i th:id="${chance.id}"  class="layui-icon layui-icon-fonts-code"></i>     
+		            </td >
+					<td th:if="${chance.status=='处理成功'}">
+		      	     	<i th:id="${chance.id}" class="layui-icon layui-icon-face-smile"></i>   
+		            </td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="fenye">
+		<nav aria-label="Page navigation">
+			<ul class="pagination">
+				<li>
+					<a href="#" aria-label="Previous" th:if="${session.plan_Chances.hasPrevious()==false}"
+						style="color:#ABAB"> 
+						<span aria-hidden="true">上一页</span>
+					</a>
+					<a href="#" aria-label="Previous" th:if="${session.plan_Chances.hasPrevious()==true}"
+						style="color:#ABAB" th:onclick="|selectPage(${session.plan_Chances.number-1})|"> 
+						<span aria-hidden="true">上一页</span>
+					</a>
+				</li> 
+				
+				
+				<li th:each="num:${#numbers.sequence(1,session.plan_Chances.totalPages)}"
+					th:attr="class=${session.plan_Chances.number==(num-1)?'active':''}">
+					<a href="#" th:text="${num}" th:onclick="|selectPage(${num-1})|">1</a>
+				</li>
+				
+				
+				<li>
+					<a href="#" aria-label="Next" th:if="${session.plan_Chances.hasNext()==false}"> 
+						<span aria-hidden="true">下一页</span>
+					</a>
+					<a href="#" aria-label="Next" th:if="${session.plan_Chances.hasNext()==true}"
+					   style="color:#ABAB" th:onclick="|selectPage(${session.plan_Chances.number+1})|"> 
+						<span aria-hidden="true">下一页</span>
+					</a>
+				</li>
+				
+				<li>
+					<span>当前：
+						<span th:text="${session.plan_Chances.number+1}">1
+						</span>页/ 共
+						<span th:text="${session.plan_Chances.totalPages}">
+						</span>页
+					</span>
+				</li>
+			</ul>
+		</nav>
+	</div>
+</div>
+<style>
+#plan {
+	width: 1140px;
+	overflow: hidden;
+}
+
+.pagination>.active>a, .pagination>.active>a:focus, .pagination>.active>a:hover,
+	.pagination>.active>span, .pagination>.active>span:focus, .pagination>.active>span:hover
+	{
+	background-color: #ccc;
+	border-color: #ccc;
+}
+
+.pagination>li>a, .pagination>li>span {
+	color: black;
+}
+
+.fenye {
+	margin-left: 400px;
+}
+
+.form-inline {
+	margin-top: 15px;
+	margin-left: 10px;
+	margin-bottom: 20px;
+}
+
+.search {
+	margin-left: 50px;
+}
+
+.table th, td {
+	text-align: center;
+}
+</style>
+<script type="text/javascript">
+	function selectPage(num){
+		$("#plan").load("updatePageByPlan",{pageIndex:num});
+	}
+	$(function(){
+		var id;
+		// 查询
+		$('.search').click(function(){
+			var address = $('#address option:selected').text();
+			if(address == '请选择所属地区'){
+				address = null;
+			}
+			$("#plan").load("toPlan",{address:address});
+		})
+		$('.layui-icon-loading').click(function(){
+			id = $(this).attr("id");
+			$('.layui-body').load('toPlan_add',{id:id}); 
+		})
+		$('.layui-icon-fonts-code').click(function(){
+			id = $(this).attr("id");
+			$('.layui-body').load('toPlan_edit',{id:id});  
+		})
+		$('.layui-icon-face-smile').click(function(){
+			id = $(this).attr("id");
+			$('.layui-body').load('toPlan_detail',{id:id});  
+		})
+	})
+</script>
+</html>

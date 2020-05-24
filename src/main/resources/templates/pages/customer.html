@@ -1,0 +1,404 @@
+<!-- 客户信息查询 -->
+<html xmlns:th="http://www.thymeleaf.org">
+<div id="customer">
+	<div>
+		<form class="form-inline">
+			<div class="form-group">
+				<input type="text" class="form-control" id="nameForm"
+					placeholder="请输入客户名称" />
+			</div>
+			<div class="form-group">
+				<select name="city" id="" class="form-control">
+					<option value="">请选择所属地区</option>
+					<option value="1">华中</option>
+					<option value="2">华北</option>
+					<option value="3">华南</option>
+					<option value="4">华东</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<select name="level" id="" class="form-control">
+					<option value="">请选择客户等级</option>
+					<option value="1">普通客户</option>
+					<option value="2">大客户</option>
+					<option value="3">重点开发客户</option>
+					<option value="4">合作伙伴</option>
+					<option value="5">战略合作伙伴</option>
+				</select>
+			</div>
+			<input class="btn btn-default search" type="button" value="查询" /> <input
+				class="btn btn-default" type="reset" value="重置" /> <input
+				class="btn btn-default" type="button" value="新增" id="add" />
+		</form>
+	</div>
+	<div>
+		<table class="table table-hover">
+			<thead>
+				<tr style="background: #E8E8E8;">
+					<th>序号</th>
+					<th>客户名称</th>
+					<th>客户经理</th>
+					<th>所属地区</th>
+					<th>客户等级</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+
+				<tbody th:each="customer:${session.customers}">
+						<tr>
+							<td th:text="${customer.id}">1</td>
+							<td th:text="${customer.name}">张三</td>
+							<td th:text="${customer.manager.name}">李四</td>
+							<td th:text="${customer.region}">江苏昆山</td>
+							<td th:text="${customer.level}">一星</td>
+							<td class="test">
+								<i th:attr="id=${customer.id}" class="layui-icon layui-icon-edit first" title="编辑客户信息"></i> 
+								<i th:attr="id=${customer.id}" class="layui-icon layui-icon-username user" title="编辑联系人信息"></i> 
+								<i th:attr="id=${customer.id}" class="layui-icon layui-icon-read editRecord" title="编辑交往记录"></i>
+								<i th:attr="id=${customer.id}" class="layui-icon layui-icon-delete deletee" title="删除客户记录"></i>
+							</td>
+						</tr>
+				</tbody>
+			
+		</table>
+	</div>
+	<div class="fenye">
+		<nav aria-label="Page navigation">
+			<ul class="pagination">
+				<li>
+					<a href="#" aria-label="Previous" th:if="${session.customers.hasPrevious()==false}"> 
+						<span aria-hidden="true">上一页</span>
+					</a>
+					<a href="#" aria-label="Previous" th:if="${session.customers.hasPrevious()==true}"
+						th:onclick="|selectPage(${session.customers.number-1})|"> 
+						<span>上一页</span>
+					</a>
+				</li>
+				<li th:each="num:${#numbers.sequence(1,session.customers.totalPages)}"
+					th:attr="class=${session.customers.number==(num-1) ? 'active' : ''}">
+					<a href="#" th:text="${num}" th:onclick="|selectPage(${num-1})|">1</a>	
+				</li>
+				<li>
+					<a href="#" aria-label="Next" th:if="${session.customers.hasNext()==false}"> 
+						<span aria-hidden="true">下一页</span>
+					</a>
+					<a href="#" aria-label="Next" th:if="${session.customers.hasNext()==true}"
+						th:onclick="|selectPage(${session.customers.number+1})|"> 
+						<span>下一页</span>
+					</a>
+				</li>
+				
+				
+				<li>
+					<span>当前：
+						<span th:text="${session.customers.number+1}">1
+						</span>页/ 共
+						<span th:text="${session.customers.totalPages}">
+						</span>页
+					</span>
+				</li>
+			</ul>
+		</nav>
+	</div>
+	<!-- 删除模态框 -->
+	<div class="modal" id="deleteModal">
+		<div class="modal-dialog" style="width: 350px;">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title">是否确定删除</h4>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default " data-dismiss="modal">取消</button>
+					<button type="button" class="btn btn-primary">确定</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 新增模态框 -->
+	<div class="modal" id="toAdd">
+		<div class="modal-dialog" style="height: 400px; overflow: auto;">
+			<div class="modal-content">
+				<form id="reset_form">
+					<div class="modal-body">
+						<div class="form-group">
+							<label>客户姓名:</label> <input type="text" name="mName"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>客户经理 :</label> 
+							<input type="text" name="mManager" th:value="${session.user.name}" 
+								th:attr="id=${session.user.id}" readonly="readonly"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>所属地区:</label> <select name="" id="selRegion"
+								class="form-control">
+								<option value="">请选择所属地区</option>
+								<option value="1">华中</option>
+								<option value="2">华北</option>
+								<option value="3">华南</option>
+								<option value="4">华东</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>客户等级:</label> <select name="flmName" id="selLevel"
+								class="form-control">
+								<option value="">请选择客户等级</option>
+								<option value="1">普通客户</option>
+								<option value="2">大客户</option>
+								<option value="3">重点开发客户</option>
+								<option value="4">合作伙伴</option>
+								<option value="5">战略合作伙伴</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label>客户地址:</label> <input type="text" name="mAddress"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>邮政编码:</label> <input type="text" name="mZip"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>客户电话:</label> <input type="text" name="mPhone"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>客户传真:</label> <input type="text" name="mFax"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>客户网址:</label> <input type="text" name="mWebsite"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>营业执照注册号:</label> <input type="text" name="mlicence"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>法人:</label> <input type="text" name="mchieftain"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>注册资金（万元）:</label> <input type="text" name="mbankroll"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>年营业额:</label> <input type="text" name="mturnover"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>开户银行:</label> <input type="text" name="mbank"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>银行账号:</label> <input type="text" name="mbankAccount"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>状态:</label> <input type="text" name="mstatus"
+								class="form-control">
+						</div>
+					</div>
+				</form>
+				<div class="modal-footer">
+					<button class="btn" style="background: #ccc">取消</button>
+					<button class="btn" style="background: #ccc">保存</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<style>
+#customer {
+	width: 1140px;
+	overflow: hidden;
+}
+
+.pagination>.active>a, .pagination>.active>a:focus, .pagination>.active>a:hover,
+	.pagination>.active>span, .pagination>.active>span:focus, .pagination>.active>span:hover
+	{
+	background-color: #ccc;
+	border-color: #ccc;
+}
+
+.pagination>li>a, .pagination>li>span {
+	color: black;
+}
+
+.fenye {
+	margin-left: 400px;
+}
+
+.form-inline {
+	margin-top: 15px;
+	margin-left: 10px;
+	margin-bottom: 20px;
+}
+
+.search {
+	margin-left: 50px;
+}
+
+.table th, td {
+	text-align: center;
+}
+
+#add {
+	margin-left: 250px;
+}
+
+#toAdd {
+	margin-top: 50px;
+}
+
+#deleteModal {
+	margin-top: 100px;
+}
+</style>
+<script type="text/javascript">
+	function selectPage(num){
+		$("#customer").load("customer/updatePage",{pageIndex:num});
+	}
+	$(function(){
+		var cusId;
+		$('.user').on('click',function(){
+			cusId = $(this).attr("id");
+			alert(cusId);
+			$('.layui-body').load("linkman/toLinkman",{cusId:cusId});  
+		})
+		$('.editRecord').on('click',function(){
+			cusId = $(this).attr("id");
+			alert(cusId);
+			$('.layui-body').load("activity/toActivity",{cusId:cusId});  
+		})
+
+		// 点击新增显示模态框
+		$('#add').click(function(){
+			$('#toAdd').show();
+			cusId=null;
+		})
+		// 新增模态框关闭
+		$('button:contains(取消)').on('click',function(){
+			$('button[type=reset]').trigger('click');
+				$('#toAdd').hide();
+				document.getElementById("reset_form").reset();
+				
+		})
+		// 新增模态框保存
+		$('button:contains(保存)').on('click',function(){
+				$('#toAdd').hide();
+				var customer = {
+						id:cusId,
+						name:$("input[name=mName]").val(),
+						region: $("#selRegion option:selected").text(),
+						manager:$("input[name=mManager]").attr("id"),
+						level:$("#selLevel option:selected").text(),
+						address:$("input[name=mAddress]").val(),
+						zip:$("input[name=mZip]").val(),
+						telephone:$("input[name=mPhone]").val(),
+						fax:$("input[name=mFax]").val(),
+						website: $("input[name=mWebsite]").val(),
+						licence:$("input[name=mlicence]").val(),
+						chieftain:$("input[name=mchieftain]").val(),
+						bankroll:$("input[name=mbankroll]").val(),
+						turnover: $("input[name=mturnover]").val(),
+						bank: $("input[name=mbank]").val(),
+						bankAccount:$("input[name=mbankAccount]").val(),
+						status:$("input[name=mstatus]").val()
+				};
+				$.post("customer/saveCustomer",customer,function(data){
+					alert(data);
+					$("#customer").load("customer/toCustomer");
+				})
+				
+				
+		})	
+		// 显示编辑模态框
+		$('.first').click(function(){
+			$('#toAdd').show();
+			cusId = $(this).attr("id");
+			$.get("customer/findById",{id:cusId},function(data){
+				$("input[name=mName]").val(data.name)
+				 if(data.region=="华中"){
+					 $("#selRegion").val(1);
+				 } else if(data.region=="华北"){
+					 $("#selRegion").val(2);
+				 } else if(data.region=="华南"){
+					 $("#selRegion").val(3);
+				 } else if(data.region=="华东"){
+					 $("#selRegion").val(4);
+				 }
+				$("#selLevel").val();
+				$("input[name=mAddress]").val(data.address)
+				$("input[name=mZip]").val(data.zip)
+				$("input[name=mPhone]").val(data.telephone)
+				$("input[name=mFax]").val(data.fax)
+				$("input[name=mWebsite]").val(data.website)
+				$("input[name=mlicence]").val(data.licence)
+				$("input[name=mchieftain]").val(data.chieftain)
+				$("input[name=mbankroll]").val(data.bankroll)
+				$("input[name=mturnover]").val(data.turnover)
+				$("input[name=mbank]").val(data.bank)
+				$("input[name=mbankAccount]").val(data.bankAccount)
+				$("input[name=mstatus]").val(data.status)
+			})
+			
+			
+			
+		})
+		// 显示删除模态框
+		$('.deletee').click(function(){
+			cusId = $(this).attr("id");
+			$('#deleteModal').show();
+		})
+		// 关闭删除模态框
+		$('.close').click(function(){
+			$('#deleteModal').hide();
+		})
+		// 关闭删除模态框
+		$('.btn-default').click(function(){
+			$('#deleteModal').hide();
+			
+		})
+		// 确定删除
+		$('.btn-primary').click(function(){
+			$('#deleteModal').hide();
+			$.ajax({ type: "delete",
+					 url: "customer/deleteCus",
+					 data: {id:cusId},
+					 success:function(data){
+						alert(data);
+						$("#customer").load("customer/toCustomer");
+				   }
+			})
+			
+		})
+		// 查询
+		$('.search').click(function(){
+			var selectName = $("#nameForm").val();
+			var selectRegion = $("select[name=city] option:selected").text();
+			var selectLevel = $("select[name=level] option:selected").text();
+			if(selectRegion == '请选择所属地区'){
+				selectRegion = null;
+			}
+			if(selectLevel == '请选择客户等级'){
+				selectLevel = null;
+			}
+			var selectMsg = {
+					name:selectName,
+					region:selectRegion,
+					level:selectLevel
+			};
+				
+			$("#customer").load("customer/toCustomer",selectMsg);	
+					
+		})
+
+	})
+</script>
+</html>
